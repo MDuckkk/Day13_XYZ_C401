@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Observability Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Lab 13 Observability</p>
+        <h1>Operations Dashboard</h1>
+        <p class="hero-copy">
+          Six live panels driven by <code>GET /metrics</code>, refreshed every 15 seconds,
+          with SLO lines for fast screenshots and incident demos.
+        </p>
+      </div>
+      <div class="hero-meta">
+        <div class="meta-card">
+          <span class="meta-label">Backend</span>
+          <strong id="backend-status">Connecting...</strong>
+        </div>
+        <div class="meta-card">
+          <span class="meta-label">Refresh</span>
+          <strong>15s</strong>
+        </div>
+        <div class="meta-card">
+          <span class="meta-label">Last update</span>
+          <strong id="last-updated">Waiting for first poll</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="status-bar" id="status-bar">
+      <span class="status-dot"></span>
+      <span id="status-text">Waiting for metrics...</span>
+    </section>
+
+    <section class="slo-strip">
+      <article class="slo-pill">
+        <span>Latency P95 SLO</span>
+        <strong>&lt; 3000 ms</strong>
+      </article>
+      <article class="slo-pill">
+        <span>Error Rate SLO</span>
+        <strong>&lt; 2%</strong>
+      </article>
+      <article class="slo-pill">
+        <span>Daily Cost SLO</span>
+        <strong>&lt; $2.50</strong>
+      </article>
+      <article class="slo-pill">
+        <span>Quality SLO</span>
+        <strong>&gt;= 0.75</strong>
+      </article>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="panel panel-latency">
+        <div class="panel-head">
+          <div>
+            <p class="panel-kicker">Panel 1</p>
+            <h2>Latency P50 / P95 / P99</h2>
+          </div>
+          <div class="panel-stat">
+            <span class="stat-label">Current P95</span>
+            <strong id="latency-p95-stat">0 ms</strong>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div>
+            <span class="mini-label">P50</span>
+            <strong id="latency-p50-stat">0 ms</strong>
+          </div>
+          <div>
+            <span class="mini-label">P99</span>
+            <strong id="latency-p99-stat">0 ms</strong>
+          </div>
+          <div>
+            <span class="mini-label">Threshold</span>
+            <strong>3000 ms</strong>
+          </div>
+        </div>
+        <div class="chart" id="latency-chart"></div>
+      </article>
+
+      <article class="panel panel-traffic">
+        <div class="panel-head">
+          <div>
+            <p class="panel-kicker">Panel 2</p>
+            <h2>Traffic (QPS)</h2>
+          </div>
+          <div class="panel-stat">
+            <span class="stat-label">Current QPS</span>
+            <strong id="traffic-qps-stat">0.00 req/s</strong>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div>
+            <span class="mini-label">Total Requests</span>
+            <strong id="traffic-total-stat">0</strong>
+          </div>
+          <div>
+            <span class="mini-label">Peak QPS</span>
+            <strong id="traffic-peak-stat">0.00 req/s</strong>
+          </div>
+          <div>
+            <span class="mini-label">Window</span>
+            <strong>Rolling session</strong>
+          </div>
+        </div>
+        <div class="chart" id="traffic-chart"></div>
+      </article>
+
+      <article class="panel panel-error">
+        <div class="panel-head">
+          <div>
+            <p class="panel-kicker">Panel 3</p>
+            <h2>Error Rate</h2>
+          </div>
+          <div class="panel-stat">
+            <span class="stat-label">Current Error Rate</span>
+            <strong id="error-rate-stat">0.00%</strong>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div>
+            <span class="mini-label">Total Errors</span>
+            <strong id="error-total-stat">0</strong>
+          </div>
+          <div>
+            <span class="mini-label">Threshold</span>
+            <strong>2.00%</strong>
+          </div>
+          <div>
+            <span class="mini-label">Source</span>
+            <strong><code>error_breakdown</code></strong>
+          </div>
+        </div>
+        <div class="chart" id="error-chart"></div>
+        <div class="breakdown" id="error-breakdown"></div>
+      </article>
+
+      <article class="panel panel-cost">
+        <div class="panel-head">
+          <div>
+            <p class="panel-kicker">Panel 4</p>
+            <h2>Cost Over Time</h2>
+          </div>
+          <div class="panel-stat">
+            <span class="stat-label">Total Cost</span>
+            <strong id="cost-total-stat">$0.0000</strong>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div>
+            <span class="mini-label">Avg Cost / Request</span>
+            <strong id="cost-avg-stat">$0.0000</strong>
+          </div>
+          <div>
+            <span class="mini-label">Threshold</span>
+            <strong>$2.50 / day</strong>
+          </div>
+          <div>
+            <span class="mini-label">Unit</span>
+            <strong>USD</strong>
+          </div>
+        </div>
+        <div class="chart" id="cost-chart"></div>
+      </article>
+
+      <article class="panel panel-tokens">
+        <div class="panel-head">
+          <div>
+            <p class="panel-kicker">Panel 5</p>
+            <h2>Tokens In / Out</h2>
+          </div>
+          <div class="panel-stat">
+            <span class="stat-label">Total Tokens</span>
+            <strong id="tokens-total-stat">0</strong>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div>
+            <span class="mini-label">Input</span>
+            <strong id="tokens-in-stat">0</strong>
+          </div>
+          <div>
+            <span class="mini-label">Output</span>
+            <strong id="tokens-out-stat">0</strong>
+          </div>
+          <div>
+            <span class="mini-label">Unit</span>
+            <strong>tokens</strong>
+          </div>
+        </div>
+        <div class="chart" id="tokens-chart"></div>
+      </article>
+
+      <article class="panel panel-quality">
+        <div class="panel-head">
+          <div>
+            <p class="panel-kicker">Panel 6</p>
+            <h2>Quality Score</h2>
+          </div>
+          <div class="panel-stat">
+            <span class="stat-label">Average Quality</span>
+            <strong id="quality-stat">0.00</strong>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div>
+            <span class="mini-label">Threshold</span>
+            <strong>0.75</strong>
+          </div>
+          <div>
+            <span class="mini-label">Scale</span>
+            <strong>0.00 to 1.00</strong>
+          </div>
+          <div>
+            <span class="mini-label">Source</span>
+            <strong>Heuristic proxy</strong>
+          </div>
+        </div>
+        <div class="chart" id="quality-chart"></div>
+      </article>
+    </section>
+  </main>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

@@ -1,3 +1,5 @@
-{"question":"What is your refund policy?","must_include":["7 days","proof of purchase"]}
-{"question":"Explain why metrics traces and logs work together","must_include":["metrics","traces","logs"]}
-{"question":"What should not appear in app logs?","must_include":["PII","sensitive"]}
+{"question":"How do I reset my password?","must_include":["reset","password","email"]}
+{"question":"I cannot connect to the VPN","must_include":["VPN","SSO","certificate"]}
+{"question":"How do I report a server incident?","must_include":["incident","on-call","P1"]}
+{"question":"I need access to the production database","must_include":["access","manager","approved"]}
+{"question":"How do I restore a deleted file from backup?","must_include":["backup","restore","previous versions"]}

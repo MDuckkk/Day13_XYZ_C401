@@ -30,8 +30,15 @@ class FakeLLM:
         output_tokens = random.randint(80, 180)
         if STATE["cost_spike"]:
             output_tokens *= 4
-        answer = (
-            "Starter answer. Teams should improve this output logic and add better quality checks. "
-            "Use retrieved context and keep responses concise."
-        )
+
+        # Extract docs from prompt and use them as the answer
+        answer = "No relevant article found. Please contact helpdesk at ext. 9999 or helpdesk@internal."
+        if "Docs=" in prompt:
+            docs_part = prompt.split("Docs=", 1)[1].split("\nQuestion=")[0].strip()
+            # docs_part looks like "['...article text...']"
+            if docs_part and docs_part not in ("[]", "['No matching IT helpdesk article found. Please contact helpdesk at ext. 9999 or helpdesk@internal.']"):
+                # Strip list brackets and quotes
+                clean = docs_part.strip("[]'\"")
+                answer = clean
+
         return FakeResponse(text=answer, usage=FakeUsage(input_tokens, output_tokens), model=self.model)
