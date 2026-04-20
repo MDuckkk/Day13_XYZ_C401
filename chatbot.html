@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Observability Lab Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: 90vh;
+        }
+
+        /* Chatbot Section */
+        .chatbot-section {
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-content {
+            background: #667eea;
+            color: white;
+            border-bottom-right-radius: 0;
+        }
+
+        .message.bot .message-content {
+            background: #f0f0f0;
+            color: #333;
+            border-bottom-left-radius: 0;
+        }
+
+        .message-meta {
+            font-size: 0.75em;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .message.user .message-meta {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .chat-input-area {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            flex: 1;
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #764ba2;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .feature-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .feature-btn {
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+
+        .feature-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .feature-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        /* Metrics Section */
+        .metrics-section {
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .metrics-header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 20px;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .metrics-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .metric-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .metric-label {
+            font-size: 0.85em;
+            color: #666;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #667eea;
+            word-break: break-all;
+        }
+
+        .metric-unit {
+            font-size: 0.7em;
+            color: #999;
+            margin-left: 5px;
+        }
+
+        .metric-trend {
+            font-size: 0.8em;
+            color: #10b981;
+            margin-top: 5px;
+        }
+
+        .metric-box.warning {
+            border-left-color: #f59e0b;
+        }
+
+        .metric-box.critical {
+            border-left-color: #ef4444;
+        }
+
+        .refresh-indicator {
+            text-align: center;
+            padding: 10px;
+            font-size: 0.9em;
+            color: #999;
+            border-top: 1px solid #eee;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #10b981;
+            margin-right: 8px;
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Chatbot Section -->
+        <div class="chatbot-section">
+            <div class="chat-header">
+                💬 Observability Lab Chatbot
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot">
+                    <div>
+                        <div class="message-content">
+                            👋 Hi! I'm your observability assistant. Ask me anything about logging, metrics, or tracing!
+                        </div>
+                        <div class="message-meta">Just now</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <div style="width: 100%;">
+                    <div class="feature-selector">
+                        <button class="feature-btn active" onclick="selectFeature('qa')">❓ Q&A</button>
+                        <button class="feature-btn" onclick="selectFeature('summary')">📝 Summary</button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <input
+                        type="text"
+                        id="messageInput"
+                        placeholder="Type your question..."
+                        onkeypress="if(event.key==='Enter') sendMessage()"
+                    />
+                    <button onclick="sendMessage()" id="sendBtn">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metrics Section -->
+        <div class="metrics-section">
+            <div class="metrics-header">
+                📊 Real-Time Metrics
+            </div>
+
+            <div class="metrics-content" id="metricsContent">
+                <div class="metric-box">
+                    <div class="metric-label">Total Requests</div>
+                    <div class="metric-value"><span id="metric-traffic">-</span></div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">Avg Latency</div>
+                    <div class="metric-value"><span id="metric-latency">-</span><span class="metric-unit">ms</span></div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">Error Rate</div>
+                    <div class="metric-value"><span id="metric-errors">0</span><span class="metric-unit">%</span></div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">Total Cost</div>
+                    <div class="metric-value">$<span id="metric-cost">-</span></div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">Quality Score</div>
+                    <div class="metric-value"><span id="metric-quality">-</span></div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">P95 Latency</div>
+                    <div class="metric-value"><span id="metric-p95">-</span><span class="metric-unit">ms</span></div>
+                </div>
+                <div class="metric-box full-width">
+                    <div class="metric-label">Tokens</div>
+                    <div class="metric-value">
+                        📥 <span id="metric-tokens-in">-</span> | 📤 <span id="metric-tokens-out">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="refresh-indicator">
+                <span class="status-indicator"></span>
+                Live metrics • Updated every 2 seconds
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:8001';
+        let selectedFeature = 'qa';
+        let userId = 'user-' + Math.random().toString(36).substr(2, 9);
+        let sessionId = 'session-' + Date.now();
+
+        function selectFeature(feature) {
+            selectedFeature = feature;
+            document.querySelectorAll('.feature-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
+
+            // Add user message
+            addMessage(message, 'user');
+            input.value = '';
+
+            // Add typing indicator
+            const typingMsg = addMessage('typing...', 'bot');
+
+            try {
+                const response = await fetch(`${API_URL}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        session_id: sessionId,
+                        feature: selectedFeature,
+                        message: message
+                    })
+                });
+
+                const data = await response.json();
+
+                // Remove typing indicator
+                typingMsg.remove();
+
+                // Add bot response
+                const latencyText = `⏱️ ${data.latency_ms}ms • 💰 $${data.cost_usd.toFixed(6)} • ⭐ ${data.quality_score}`;
+                addMessage(data.answer, 'bot', latencyText);
+
+                // Update metrics
+                updateMetrics();
+            } catch (error) {
+                typingMsg.remove();
+                addMessage(`❌ Error: ${error.message}`, 'bot');
+            } finally {
+                sendBtn.disabled = false;
+                input.focus();
+            }
+        }
+
+        function addMessage(text, sender, meta = '') {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = text === 'typing...' ? '' : text;
+
+            if (text === 'typing...') {
+                contentDiv.innerHTML = '<div class="loading"></div>';
+            }
+
+            const metaDiv = document.createElement('div');
+            metaDiv.className = 'message-meta';
+            metaDiv.textContent = meta || new Date().toLocaleTimeString();
+
+            messageDiv.appendChild(contentDiv);
+            if (meta || sender === 'bot') {
+                messageDiv.appendChild(metaDiv);
+            }
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            return messageDiv;
+        }
+
+        async function updateMetrics() {
+            try {
+                const response = await fetch(`${API_URL}/metrics`);
+                const metrics = await response.json();
+
+                document.getElementById('metric-traffic').textContent = metrics.traffic || '-';
+                document.getElementById('metric-latency').textContent =
+                    metrics.latency_p50 ? Math.round(metrics.latency_p50) : '-';
+                document.getElementById('metric-p95').textContent =
+                    metrics.latency_p95 ? Math.round(metrics.latency_p95) : '-';
+                document.getElementById('metric-cost').textContent =
+                    metrics.total_cost_usd ? metrics.total_cost_usd.toFixed(4) : '-';
+                document.getElementById('metric-quality').textContent =
+                    metrics.quality_avg ? metrics.quality_avg.toFixed(2) : '-';
+                document.getElementById('metric-tokens-in').textContent =
+                    metrics.tokens_in_total || '-';
+                document.getElementById('metric-tokens-out').textContent =
+                    metrics.tokens_out_total || '-';
+
+                // Calculate error rate
+                const errors = Object.values(metrics.error_breakdown || {}).reduce((a, b) => a + b, 0);
+                const errorRate = metrics.traffic ? ((errors / metrics.traffic) * 100).toFixed(2) : '0';
+                document.getElementById('metric-errors').textContent = errorRate;
+            } catch (error) {
+                console.error('Error fetching metrics:', error);
+            }
+        }
+
+        // Initial metrics load and set up auto-refresh
+        updateMetrics();
+        setInterval(updateMetrics, 2000);
+
+        // Focus input on load
+        window.addEventListener('load', () => {
+            document.getElementById('messageInput').focus();
+        });
+    </script>
+</body>
+</html>

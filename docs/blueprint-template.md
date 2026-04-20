@@ -24,6 +24,7 @@
 ## 3. Technical Evidence (Group)
 
 ### 3.1 Logging & Tracing
+- [EVIDENCE_LANGFUSE_TRACE_LIST_SCREENSHOT]: [Path to image]
 - [EVIDENCE_CORRELATION_ID_SCREENSHOT]: [Path to image]
 - [EVIDENCE_PII_REDACTION_SCREENSHOT]: [Path to image]
 - [EVIDENCE_TRACE_WATERFALL_SCREENSHOT]: [Path to image]
