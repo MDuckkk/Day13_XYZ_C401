@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 import os
 from typing import Any
 
@@ -33,8 +32,6 @@ if langfuse_context is None:
     class _DummyContext:
         def update_current_trace(self, **kwargs: Any) -> None:
             return None
-
         def update_current_observation(self, **kwargs: Any) -> None:
             return None
-
     langfuse_context = _DummyContext()
